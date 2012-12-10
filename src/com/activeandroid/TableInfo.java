@@ -46,10 +46,9 @@ public final class TableInfo {
 		mType = type;
 
 		final Table tableAnnotation = type.getAnnotation(Table.class);
-		if (tableAnnotation != null) {
+		if (tableAnnotation != null && tableAnnotation.name() != null && tableAnnotation.name().length() != 0) {
 			mTableName = tableAnnotation.name();
-		}
-		else {
+		} else {
 			mTableName = type.getSimpleName();
 		}
 
@@ -59,7 +58,12 @@ public final class TableInfo {
 		for (Field field : fields) {
 			if (field.isAnnotationPresent(Column.class)) {
 				final Column columnAnnotation = field.getAnnotation(Column.class);
-				mColumnNames.put(field, columnAnnotation.name());
+				final String columnName = columnAnnotation.name();
+				if (columnName != null && columnName.length() > 0) {
+					mColumnNames.put(field, columnName);
+				} else {
+					mColumnNames.put(field, field.getName());
+				}
 			}
 		}
 	}
@@ -92,12 +96,10 @@ public final class TableInfo {
 		if (type.equals(Model.class)) {
 			try {
 				return type.getDeclaredField("mId");
-			}
-			catch (NoSuchFieldException e) {
+			} catch (NoSuchFieldException e) {
 				Log.e("Impossible!", e);
 			}
-		}
-		else if (type.getSuperclass() != null) {
+		} else if (type.getSuperclass() != null) {
 			return getIdField(type.getSuperclass());
 		}
 
